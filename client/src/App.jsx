@@ -3,21 +3,24 @@ import axios from "axios";
 import backgroundDesktop from "./images/pattern-bg-desktop.png";
 
 export default function App() {
+
+  const [input, setInput] = useState("");
+
   const [ipAddress, setIPAddress] = useState("");
   const [location, setLocation] = useState({ city: "", country: "", postalCode: "" });
   const [timezone, setTimezone] = useState("");
   const [isp, setISP] = useState("");
 
-  const IP_KEY = "at_aSCLjzTBebBZs8XxWlucojphVaPjr";
+  const IPKEY = import.meta.env.IP_KEY;
 
   const searchIPAddress = async () => {
     try {
       const response = await axios.get(
-        `https://geo.ipify.org/api/v1?apiKey=${IP_KEY}&ipAddress=${ipAddress}`
+        `https://geo.ipify.org/api/v1?apiKey=${IPKEY}&ipAddress=${input}`
       );
 
       const { ip, location, timezone, isp } = response.data;
-
+      
       setIPAddress(ip);
       setLocation(location);
       setTimezone(location.timezone);
@@ -40,9 +43,9 @@ export default function App() {
           <input
             type="text"
             placeholder="Search for any IP address or domain"
-            className="w-96 h-10 rounded-l-lg px-4"
-            value={ipAddress}
-            onChange={(e) => setIPAddress(e.target.value)}
+            className="w-96 h-10 rounded-l-lg px-4 outline-none"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
           <button
             className="h-10 w-10 rounded-r-lg bg-black flex justify-center items-center text-white"
@@ -62,27 +65,27 @@ export default function App() {
             </svg>
           </button>
         </div>
-        <div className="absolute top-[90%] bg-white p-3 rounded-md overflow-hidden">
-          <div className="flex gap-10">
-            <div className="flex flex-col gap-2">
-              <div className="text-gray-500 text-xs font-bold">IP ADDRESS</div>
-              <div className="text-xl text-black">{ipAddress}</div>
+        <div className="absolute top-[80%] bg-white h-24 w-[50%] p-3 rounded-md overflow-hidden">
+          <div className="flex w-full h-full justify-between">
+            <div className="flex flex-col gap-2 w-full px-5 h-full">
+              <div className="text-gray-500 text-xs">IP ADDRESS</div>
+              <div className="text-lg text-black">{ipAddress}</div>
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="text-gray-500 text-xs font-semibold">LOCATION</div>
-              <div className="text-xl text-black">
+            <div className="flex flex-col gap-2 w-full px-5 h-full border-l-[2px] border-gray-200">
+              <div className="text-gray-500 text-xs">LOCATION</div>
+              <div className="text-lg text-black">
                 {location.city} {location.country} {location.postalCode}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="text-gray-500 text-xs font-semibold">TIMEZONE</div>
-              <div className="text-xl text-black">
+            <div className="flex flex-col gap-2 w-full px-5 h-full border-l-[2px] border-gray-200">
+              <div className="text-gray-500 text-xs">TIMEZONE</div>
+              <div className="text-lg text-black">
                 {timezone && `UTC${timezone}`}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="text-gray-500 text-xs font-semibold">ISP</div>
-              <div className="text-xl text-black">{isp}</div>
+            <div className="flex flex-col gap-2 w-full px-5 h-full border-l-[2px] border-gray-200">
+              <div className="text-gray-500 text-xs">ISP</div>
+              <div className="text-lg text-black">{isp}</div>
             </div>
           </div>
         </div>
