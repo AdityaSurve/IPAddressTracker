@@ -1,9 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
 import backgroundDesktop from "./images/pattern-bg-desktop.png";
+import { toast } from "react-hot-toast";
+
 
 export default function App() {
-
   const [input, setInput] = useState("");
 
   const [ipAddress, setIPAddress] = useState("");
@@ -11,22 +12,21 @@ export default function App() {
   const [timezone, setTimezone] = useState("");
   const [isp, setISP] = useState("");
 
-  const IPKEY = import.meta.env.IP_KEY;
 
   const searchIPAddress = async () => {
     try {
       const response = await axios.get(
-        `https://geo.ipify.org/api/v1?apiKey=${IPKEY}&ipAddress=${input}`
-      );
-
+        `https://geo.ipify.org/api/v1?apiKey=at_aSCLjzTBebBZs8XxWlucojphVaPjr&ipAddress=${input}`
+      )
       const { ip, location, timezone, isp } = response.data;
-      
       setIPAddress(ip);
       setLocation(location);
       setTimezone(location.timezone);
       setISP(isp);
+      toast.success("Success");
     } catch (error) {
       console.error(error);
+      toast.error("Error");
     }
   };
 
