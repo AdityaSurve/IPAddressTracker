@@ -1,28 +1,62 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import backgroundDesktop from "./images/pattern-bg-desktop.png";
+import L from "leaflet";
 import { toast } from "react-hot-toast";
 
+import backgroundDesktop from "./images/pattern-bg-desktop.png";
+import "leaflet/dist/leaflet.css"; // Import Leaflet CSS
 
 export default function App() {
   const [input, setInput] = useState("");
-
   const [ipAddress, setIPAddress] = useState("");
   const [location, setLocation] = useState({ city: "", country: "", postalCode: "" });
   const [timezone, setTimezone] = useState("");
   const [isp, setISP] = useState("");
-
+  const mapRef = useRef(null);
 
   const searchIPAddress = async () => {
     try {
       const response = await axios.get(
         `https://geo.ipify.org/api/v1?apiKey=at_aSCLjzTBebBZs8XxWlucojphVaPjr&ipAddress=${input}`
-      )
+      );
+
       const { ip, location, timezone, isp } = response.data;
+
       setIPAddress(ip);
       setLocation(location);
       setTimezone(location.timezone);
       setISP(isp);
+
+      const { lat, lng } = location;
+
+      const mapContainer = mapRef.current;
+
+      // If the map has not been initialized yet, create it
+      if (!mapContainer.hasChildNodes()) {
+        const myMap = L.map(mapContainer).setView([lat, lng], 13);
+        L.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }
+        ).addTo(myMap);
+
+        mapRef.current = myMap; // Update the mapRef.current to hold the Leaflet map instance
+      } else {
+        // If the map has already been initialized, just set the view to the new location
+        mapRef.current.setView([lat, lng], 13);
+      }
+
+      // Clear previous markers
+      mapRef.current.leafletElement.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          mapRef.current.leafletElement.removeLayer(layer);
+        }
+      });
+
+      // Add a marker at the selected location
+      L.marker([lat, lng]).addTo(mapRef.current.leafletElement);
+
       toast.success("Success");
     } catch (error) {
       console.error(error);
@@ -90,7 +124,7 @@ export default function App() {
           </div>
         </div>
       </div>
-      <div className="h-full w-full bg-green-500"></div>
+      <div id="leaflet-map" ref={mapRef} className="h-full w-full bg-green-500"></div>
     </div>
   );
 }
