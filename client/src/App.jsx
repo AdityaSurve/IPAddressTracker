@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import L from "leaflet";
 import { toast } from "react-hot-toast";
 
 import backgroundDesktop from "./images/pattern-bg-desktop.png";
-import "leaflet/dist/leaflet.css"; // Import Leaflet CSS
+import "leaflet/dist/leaflet.css";
 
 export default function App() {
   const [input, setInput] = useState("");
@@ -13,6 +12,11 @@ export default function App() {
   const [timezone, setTimezone] = useState("");
   const [isp, setISP] = useState("");
   const mapRef = useRef(null);
+
+  useEffect(() => {
+    mapRef.current = L.map("map").setView([51.505, -0.09], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapRef.current);
+  }, []);
 
   const searchIPAddress = async () => {
     try {
@@ -29,38 +33,17 @@ export default function App() {
 
       const { lat, lng } = location;
 
-      const mapContainer = mapRef.current;
+      mapRef.current.setView([lat, lng], 13);
 
-      // If the map has not been initialized yet, create it
-      if (!mapContainer.hasChildNodes()) {
-        const myMap = L.map(mapContainer).setView([lat, lng], 13);
-        L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          }
-        ).addTo(myMap);
-
-        mapRef.current = myMap; // Update the mapRef.current to hold the Leaflet map instance
-      } else {
-        // If the map has already been initialized, just set the view to the new location
-        mapRef.current.setView([lat, lng], 13);
-      }
-
-      // Clear previous markers
-      mapRef.current.leafletElement.eachLayer((layer) => {
+      mapRef.current.eachLayer((layer) => {
         if (layer instanceof L.Marker) {
-          mapRef.current.leafletElement.removeLayer(layer);
+          mapRef.current.removeLayer(layer);
         }
       });
 
-      // Add a marker at the selected location
-      L.marker([lat, lng]).addTo(mapRef.current.leafletElement);
-
-      toast.success("Success");
+      L.marker([lat, lng]).addTo(mapRef.current);
     } catch (error) {
-      console.error(error);
-      toast.error("Error");
+      toast.error("Invalid IP Address");
     }
   };
 
@@ -113,9 +96,7 @@ export default function App() {
             </div>
             <div className="flex flex-col gap-2 w-full px-5 h-full border-l-[2px] border-gray-200">
               <div className="text-gray-500 text-xs">TIMEZONE</div>
-              <div className="text-lg text-black">
-                {timezone && `UTC${timezone}`}
-              </div>
+              <div className="text-lg text-black">{timezone && `UTC${timezone}`}</div>
             </div>
             <div className="flex flex-col gap-2 w-full px-5 h-full border-l-[2px] border-gray-200">
               <div className="text-gray-500 text-xs">ISP</div>
@@ -123,8 +104,9 @@ export default function App() {
             </div>
           </div>
         </div>
+        <div id="map" className="h-full w-full"></div>
       </div>
-      <div id="leaflet-map" ref={mapRef} className="h-full w-full bg-green-500"></div>
+      <div className="h-full w-full bg-green-500"></div>
     </div>
   );
 }
